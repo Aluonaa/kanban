@@ -14,6 +14,7 @@ import com.furiosaming.kanban.service.dto.MemberDto;
 import com.furiosaming.kanban.service.dto.TaskDto;
 import com.furiosaming.kanban.service.dto.filter.TaskFilter;
 import com.furiosaming.kanban.service.dto.filter.TaskListFilter;
+import com.furiosaming.kanban.service.responseRequest.base.BaseResponseDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingRequestDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingResponseDto;
 import com.furiosaming.kanban.service.service.MemberService;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,13 +44,13 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final MemberService memberService;
     private final TaskListService taskListService;
-    private final UserService userService;
+//    private final UserService userService;
 
-    public TaskServiceImpl(UserService userService, TaskRepository taskRepository, MemberService memberService, TaskListService taskListService) {
+    public TaskServiceImpl(TaskRepository taskRepository, MemberService memberService, TaskListService taskListService) {
         this.taskRepository = taskRepository;
         this.memberService = memberService;
         this.taskListService = taskListService;
-        this.userService = userService;
+//        this.userService = userService;
     }
 
     public void updateDeadlineStatus() {
@@ -69,24 +71,25 @@ public class TaskServiceImpl implements TaskService {
         log.debug("TaskServiceImpl getAllTasks {}", pagingRequestDto);
         PageRequest pageRequest;
         pageRequest = pageRequestMap(pagingRequestDto);
-        TaskFilter taskFilter = pagingRequestDto.getData();
+        TaskFilter taskFilter = pagingRequestDto.getFilter();
         CommonFilter<SortFieldTask> commonFilter = TaskFilterMapper.filterToCommonFilter(taskFilter);
-        Page<Task> pageTask = taskRepository.findAll(TaskSpecification.filterTask(commonFilter), pageRequest);
+        Specification<Task> specification = TaskSpecification.filterTask(commonFilter);
+        Page<Task> pageTask = taskRepository.findAll(specification, pageRequest);
         long total = pageTask.getTotalElements();
         List<Task> allTask = pageTask.getContent();
         List<TaskDto> allTaskDto = allTaskDtoMap(allTask);
         /** user service **/
-        Set<MemberDto> memberDtoSet = new HashSet<>();
-        memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getAuthor).collect(Collectors.toList()));
-        memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getExecutor).collect(Collectors.toList()));
-        Set<String> upns = userService.getUpnList(memberDtoSet);
-        List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
-        memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
-        return PagingResponseDto.<List<TaskDto>>newPageBuilder().ok(Collections.singletonList(allTaskDto), total, pageRequest.getPageNumber(), pageRequest.getPageSize());
+//        Set<MemberDto> memberDtoSet = new HashSet<>();
+//        memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getAuthor).collect(Collectors.toList()));
+//        memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getExecutor).collect(Collectors.toList()));
+//        Set<String> upns = userService.getUpnList(memberDtoSet);
+//        List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
+//        memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
+        return new PagingResponseDto.Builder<List<TaskDto>>().success(allTaskDto, pageRequest.getPageNumber(), pageRequest.getPageSize(), total).build();
     }
 
     @Override
-    public PagingResponseDto<List<TaskDto>> allTaskOfTaskList(Long id, PagingRequestDto<TaskListFilter> pagingRequestDto) {
+    public PagingResponseDto<List<TaskDto>> allTaskOfTaskList(Long id, PagingRequestDto<TaskFilter> pagingRequestDto) {
         log.debug("ProjectServiceImpl allTaskListOfProject {}", pagingRequestDto);
         PageRequest pageRequest;
         pageRequest = pageRequestMap(pagingRequestDto);
@@ -96,44 +99,44 @@ public class TaskServiceImpl implements TaskService {
             Pageable pageable = PageRequest.of(pageRequest.getPageNumber(), pageRequest.getPageSize());
             Page<Task> pageAllTask = getAllTasksByTaskList(taskList, pageable);
             long total = pageAllTask.getTotalElements();
-            List<Task> allTask = pageAllTask.toList();
+            List<Task> allTask = pageAllTask.getContent();
             List<TaskDto> allTaskDto = allTaskDtoMap(allTask);
             /** Взаимодействие с user service **/
-            Set<MemberDto> memberDtoSet = new HashSet<>();
-            memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getAuthor).collect(Collectors.toList()));
-            memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getExecutor).collect(Collectors.toList()));
-            Set<String> upns = userService.getUpnList(memberDtoSet);
-            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
-            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
+//            Set<MemberDto> memberDtoSet = new HashSet<>();
+//            memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getAuthor).collect(Collectors.toList()));
+//            memberDtoSet.addAll(allTaskDto.stream().map(TaskDto::getExecutor).collect(Collectors.toList()));
+//            Set<String> upns = userService.getUpnList(memberDtoSet);
+//            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
+//            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
 
-            return PagingResponseDto.<List<TaskDto>>newPageBuilder().ok(Collections.singleton(allTaskDto), total, pageRequest.getPageNumber(), pageRequest.getPageSize());
+            return new PagingResponseDto.Builder<List<TaskDto>>().success(allTaskDto, pageRequest.getPageNumber(), pageRequest.getPageSize(), total).build();
         } else {
-            return PagingResponseDto.<List<TaskDto>>newPageBuilder().addError(notFound(ID_PROJECT_NOT_FOUND)).build();
+            return new PagingResponseDto.Builder<List<TaskDto>>().notFound(ID_PROJECT_NOT_FOUND).build();
         }
     }
 
     @Override
-    public BaseDataResponse<TaskDto> getByIdTask(Long id) {
+    public BaseResponseDto<TaskDto> getByIdTask(Long id) {
         log.debug("TaskServiceImpl getByIdTask {}", id);
         Optional<Task> optionalTask = taskRepository.findById(id);
         if (optionalTask.isPresent()) {
             TaskDto taskDto = taskToDtoMap(optionalTask.get());
             /** user service **/
-            Set<MemberDto> memberDtoSet = new HashSet<>();
-            memberDtoSet.add(taskDto.getAuthor());
-            memberDtoSet.add(taskDto.getExecutor());
-            Set<String> upns = userService.getUpnList(memberDtoSet);
-            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
-            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
-            return BaseDataResponse.<TaskDto>newBuilder().ok(taskDto);
+//            Set<MemberDto> memberDtoSet = new HashSet<>();
+//            memberDtoSet.add(taskDto.getAuthor());
+//            memberDtoSet.add(taskDto.getExecutor());
+//            Set<String> upns = userService.getUpnList(memberDtoSet);
+//            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
+//            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
+            return new BaseResponseDto.Builder<TaskDto>().success(taskDto).build();
         } else {
-            return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_TASK_NOT_FOUND)).build();
+            return new BaseResponseDto.Builder<TaskDto>().notFound(ID_TASK_NOT_FOUND).build();
         }
     }
 
     @Override
     @Transactional
-    public BaseDataResponse<TaskDto> saveTask(TaskDto taskDto) {
+    public BaseResponseDto<TaskDto> saveTask(TaskDto taskDto) {
         log.debug("TaskServiceImpl saveTask {}", taskDto);
         if (taskDto.getId() == null) {
             return createTask(taskDto);
@@ -142,7 +145,7 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    private BaseDataResponse<TaskDto> createTask(TaskDto taskDto) {
+    private BaseResponseDto<TaskDto> createTask(TaskDto taskDto) {
         if (taskDto.getName() != null && taskDto.getDescription() != null && taskDto.getDeadline() != null
                 && taskDto.getExecutor() != null && taskDto.getAuthor() != null && taskDto.getTaskListDto() != null
                 && taskDto.getTaskListDto().getId() != null) {
@@ -150,13 +153,13 @@ public class TaskServiceImpl implements TaskService {
             Member author = memberService.createOrGetUser(taskDto.getAuthor().getUpn());
             TaskList taskList = taskListService.getTaskList(taskDto.getTaskListDto().getId());
             if (taskList == null) {
-                return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_TASK_LIST_NOT_FOUND)).build();
+                return new BaseResponseDto.Builder<TaskDto>().notFound(ID_TASK_LIST_NOT_FOUND).build();
             }
             if (executor == null) {
-                return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_EXECUTOR_NOT_FOUND)).build();
+                return new BaseResponseDto.Builder<TaskDto>().notFound(ID_EXECUTOR_NOT_FOUND).build();
             }
             if (author == null) {
-                return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_AUTHOR_NOT_FOUND)).build();
+                return new BaseResponseDto.Builder<TaskDto>().notFound(ID_AUTHOR_NOT_FOUND).build();
             }
             Date currentDate = new Date();
             Task task = dtoToTaskMap(taskDto);
@@ -169,19 +172,19 @@ public class TaskServiceImpl implements TaskService {
             taskDto.setId(task.getId());
             taskDto.setTaskListDto(taskListToDtoMap(task.getTaskList()));
             /** user service **/
-            Set<MemberDto> memberDtoSet = new HashSet<>();
-            memberDtoSet.add(taskDto.getAuthor());
-            memberDtoSet.add(taskDto.getExecutor());
-            Set<String> upns = userService.getUpnList(memberDtoSet);
-            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
-            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
+//            Set<MemberDto> memberDtoSet = new HashSet<>();
+//            memberDtoSet.add(taskDto.getAuthor());
+//            memberDtoSet.add(taskDto.getExecutor());
+//            Set<String> upns = userService.getUpnList(memberDtoSet);
+//            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
+//            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
 
-            return BaseDataResponse.<TaskDto>newBuilder().ok(taskDto);
+            return new BaseResponseDto.Builder<TaskDto>().success(taskDto).build();
         }
-        return BaseDataResponse.<TaskDto>newBuilder().addError(missing(MISSING_FIELDS)).build();
+        return new BaseResponseDto.Builder<TaskDto>().missing(MISSING_FIELDS).build();
     }
 
-    private BaseDataResponse<TaskDto> editTask(TaskDto taskDto) {
+    private BaseResponseDto<TaskDto> editTask(TaskDto taskDto) {
         Optional<Task> optionalTask = taskRepository.findById(taskDto.getId());
         if (optionalTask.isPresent()) {
             if (taskDto.getName() != null && taskDto.getDescription() != null && taskDto.getDeadline() != null
@@ -189,10 +192,10 @@ public class TaskServiceImpl implements TaskService {
                 Member executor = memberService.createOrGetUser(taskDto.getExecutor().getUpn());
                 TaskList taskList = taskListService.getTaskList(taskDto.getTaskListDto().getId());
                 if (executor == null) {
-                    return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_EXECUTOR_NOT_FOUND)).build();
+                    return new BaseResponseDto.Builder<TaskDto>().notFound(ID_EXECUTOR_NOT_FOUND).build();
                 }
                 if (taskList == null) {
-                    return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_TASK_LIST_NOT_FOUND)).build();
+                    return new BaseResponseDto.Builder<TaskDto>().notFound(ID_TASK_LIST_NOT_FOUND).build();
                 }
                 Date currentDate = new Date();
                 Task task = optionalTask.get();
@@ -207,22 +210,22 @@ public class TaskServiceImpl implements TaskService {
                 taskRepository.save(task);
                 taskDto = taskToDtoMap(task);
                 /** user service **/
-                Set<MemberDto> memberDtoList = new HashSet<>();
-                memberDtoList.add(taskDto.getAuthor());
-                memberDtoList.add(taskDto.getExecutor());
-                Set<String> upns = userService.getUpnList(memberDtoList);
-                List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
-                memberDtoListUserToMemberDto(new ArrayList<>(memberDtoList), memberDtoListFromUserService);
-                return BaseDataResponse.<TaskDto>newBuilder().ok(taskDto);
+//                Set<MemberDto> memberDtoList = new HashSet<>();
+//                memberDtoList.add(taskDto.getAuthor());
+//                memberDtoList.add(taskDto.getExecutor());
+//                Set<String> upns = userService.getUpnList(memberDtoList);
+//                List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
+//                memberDtoListUserToMemberDto(new ArrayList<>(memberDtoList), memberDtoListFromUserService);
+                return new BaseResponseDto.Builder<TaskDto>().success(taskDto).build();
             }
-            return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(MISSING_FIELDS)).build();
+            return new BaseResponseDto.Builder<TaskDto>().notFound(MISSING_FIELDS).build();
         }
-        return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_TASK_NOT_FOUND)).build();
+        return new BaseResponseDto.Builder<TaskDto>().notFound(ID_TASK_NOT_FOUND).build();
     }
 
     @Override
     @Transactional
-    public BaseDataResponse<TaskDto> deleteTask(Long id) {
+    public BaseResponseDto<TaskDto> deleteTask(Long id) {
         log.debug("TaskServiceImpl deleteTask {}", id);
         Optional<Task> optionalTask = taskRepository.findById(id);
         if (optionalTask.isPresent()) {
@@ -231,15 +234,15 @@ public class TaskServiceImpl implements TaskService {
             taskRepository.save(task);
             TaskDto taskDto = taskToDtoMap(task);
             /** user service **/
-            Set<MemberDto> memberDtoList = new HashSet<>();
-            memberDtoList.add(taskDto.getAuthor());
-            memberDtoList.add(taskDto.getExecutor());
-            Set<String> upns = userService.getUpnList(memberDtoList);
-            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
-            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoList), memberDtoListFromUserService);
-            return BaseDataResponse.<TaskDto>newBuilder().ok(taskDto);
+//            Set<MemberDto> memberDtoList = new HashSet<>();
+//            memberDtoList.add(taskDto.getAuthor());
+//            memberDtoList.add(taskDto.getExecutor());
+//            Set<String> upns = userService.getUpnList(memberDtoList);
+//            List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(upns);
+//            memberDtoListUserToMemberDto(new ArrayList<>(memberDtoList), memberDtoListFromUserService);
+            return new BaseResponseDto.Builder<TaskDto>().success(taskDto).build();
         }
-        return BaseDataResponse.<TaskDto>newBuilder().addError(notFound(ID_TASK_NOT_FOUND)).build();
+        return new BaseResponseDto.Builder<TaskDto>().notFound(ID_TASK_NOT_FOUND).build();
     }
 
     @Override

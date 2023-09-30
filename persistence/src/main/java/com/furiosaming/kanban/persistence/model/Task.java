@@ -21,13 +21,13 @@ public class Task {
     private String name;
     @Column(length = 2000, nullable = false)
     private String description;
-    @Column(nullable = false)
+    @Column(name = "deadline", nullable = false)
     private Date deadline;
     @Column(name = "date_of_create", nullable = false)
     private Date dateOfCreate;
     @Column(name = "date_of_update", nullable = false)
     private Date dateOfUpdate;
-    @Column()
+    @Column(name = "finish", nullable = false)
     private Date finish;
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;

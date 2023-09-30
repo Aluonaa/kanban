@@ -10,11 +10,11 @@ public class TaskFilterMapper {
 
     public static CommonFilter<SortFieldTask> filterToCommonFilter(TaskFilter taskFilter) {
         CommonFilter<SortFieldTask> commonFilter = new CommonFilter<>();
-        if (!ObjectUtils.isEmpty(taskFilter.getStatus())) {
-            commonFilter.setStatus((taskFilter.getStatus()));
-        }
         if (taskFilter == null) {
             return commonFilter;
+        }
+        if (!ObjectUtils.isEmpty(taskFilter.getStatus())) {
+            commonFilter.setStatus((taskFilter.getStatus()));
         }
         if (!ObjectUtils.isEmpty(taskFilter.getName())) {
             commonFilter.setName(taskFilter.getName());

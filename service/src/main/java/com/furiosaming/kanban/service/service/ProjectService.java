@@ -3,6 +3,7 @@ package com.furiosaming.kanban.service.service;
 import com.furiosaming.kanban.persistence.model.Project;
 import com.furiosaming.kanban.service.dto.ProjectDto;
 import com.furiosaming.kanban.service.dto.filter.ProjectFilter;
+import com.furiosaming.kanban.service.responseRequest.base.BaseResponseDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingRequestDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingResponseDto;
 
@@ -12,12 +13,11 @@ public interface ProjectService {
 
     PagingResponseDto<List<ProjectDto>> getAllProjects(PagingRequestDto<ProjectFilter> pagingRequestDto);
 
-    BaseDataResponse<ProjectDto> getByIdProject(Long id);
+    BaseResponseDto<ProjectDto> getByIdProject(Long id);
 
+    BaseResponseDto<ProjectDto> saveProject(ProjectDto projectDto);
 
-    BaseDataResponse<ProjectDto> saveProject(ProjectDto projectDto);
-
-    BaseDataResponse<ProjectDto> deleteProject(Long id);
+    BaseResponseDto<ProjectDto> deleteProject(Long id);
 
     Project getProject(Long id);
 

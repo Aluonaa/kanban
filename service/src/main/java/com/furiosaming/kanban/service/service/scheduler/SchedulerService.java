@@ -13,9 +13,9 @@ public class SchedulerService {
         this.taskService = taskService;
     }
 
-    @Scheduled(cron = "@daily")
-    public void OverdueTasks() {
-        taskService.updateDeadlineStatus();
-    }
+//    @Scheduled(cron = "@daily")
+//    public void OverdueTasks() {
+//        taskService.updateDeadlineStatus();
+//    }
 }
 

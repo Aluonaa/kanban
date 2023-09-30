@@ -2,8 +2,8 @@ package com.furiosaming.kanban.web.controller;
 
 
 import com.furiosaming.kanban.service.dto.TaskListDto;
-import com.furiosaming.kanban.service.dto.filter.ProjectFilter;
 import com.furiosaming.kanban.service.dto.filter.TaskListFilter;
+import com.furiosaming.kanban.service.responseRequest.base.BaseResponseDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingRequestDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingResponseDto;
 import com.furiosaming.kanban.service.service.TaskListService;
@@ -38,28 +38,28 @@ public class TaskListController {
 
     @Operation(summary = "Получить все списки задач проекта по id")
     @PostMapping(value = "/{id}/lists", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public PagingResponseDto<List<TaskListDto>> allTaskListOfProject(@PathVariable Long id, @RequestBody PagingRequestDto<ProjectFilter> pagingRequestDto) {
+    public PagingResponseDto<List<TaskListDto>> allTaskListOfProject(@PathVariable Long id, @RequestBody PagingRequestDto<TaskListFilter> pagingRequestDto) {
         log.debug("GET ALL TASKLISTS FROM PROJECT");
         return taskListService.allTaskListOfProject(id, pagingRequestDto);
     }
 
     @Operation(summary = "Получить список задач по id")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseDataResponse<TaskListDto> getByIdTaskList(@PathVariable Long id) {
+    public BaseResponseDto<TaskListDto> getByIdTaskList(@PathVariable Long id) {
         log.debug("GET TASKLIST BY ID");
         return taskListService.getByIdTaskList(id);
     }
 
     @Operation(summary = "Создать список задач")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseDataResponse<TaskListDto> newTaskList(@RequestBody TaskListDto taskListDto) {
+    public BaseResponseDto<TaskListDto> newTaskList(@RequestBody TaskListDto taskListDto) {
         log.debug("NEW/UPDATE TASKLIST");
         return taskListService.saveTaskList(taskListDto);
     }
 
     @Operation(summary = "Удалить список задач")
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseDataResponse<TaskListDto> deleteTaskList(@PathVariable Long id) {
+    public BaseResponseDto<TaskListDto> deleteTaskList(@PathVariable Long id) {
         log.debug("DELETE TASKLIST BY ID");
         return taskListService.deleteTaskList(id);
     }

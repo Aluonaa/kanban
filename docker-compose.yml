@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  postgres:
+    container_name: kanban
+    image: postgres:13.3-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: kanban
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"

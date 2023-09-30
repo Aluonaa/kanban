@@ -19,30 +19,30 @@ public class MemberMapper {
         });
         return memberDtoList;
     }
-
-    public static MemberDto memberDtoListUserToMemberDto(MemberDto memberDto, MemberDto memberDtoFromUserService) {
-        if (memberDto.equals(memberDtoFromUserService)) {
-            memberDto.setFirstName(memberDtoFromUserService.getFirstName());
-            memberDto.setMiddleName(memberDtoFromUserService.getMiddleName());
-            memberDto.setLastName(memberDtoFromUserService.getLastName());
-        }
-
-        return memberDto;
-    }
-
-    /**
-     * При получении юзеров из user service
-     * они имеют вид UserBean,
-     * а для фронта необходим MemberDto
-     **/
-    public static MemberDto userBeanToMemberMapper(UserBean userBean) {
-        MemberDto memberDto = new MemberDto();
-        memberDto.setUpn(userBean.getUserPrincipalName());
-        memberDto.setFirstName(userBean.getFirstName());
-        memberDto.setMiddleName(userBean.getMiddleName());
-        memberDto.setLastName(userBean.getLastName());
-        return memberDto;
-    }
+//
+//    public static MemberDto memberDtoListUserToMemberDto(MemberDto memberDto, MemberDto memberDtoFromUserService) {
+//        if (memberDto.equals(memberDtoFromUserService)) {
+//            memberDto.setFirstName(memberDtoFromUserService.getFirstName());
+//            memberDto.setMiddleName(memberDtoFromUserService.getMiddleName());
+//            memberDto.setLastName(memberDtoFromUserService.getLastName());
+//        }
+//
+//        return memberDto;
+//    }
+//
+//    /**
+//     * При получении юзеров из user service
+//     * они имеют вид UserBean,
+//     * а для фронта необходим MemberDto
+//     **/
+//    public static MemberDto userBeanToMemberMapper(UserBean userBean) {
+//        MemberDto memberDto = new MemberDto();
+//        memberDto.setUpn(userBean.getUserPrincipalName());
+//        memberDto.setFirstName(userBean.getFirstName());
+//        memberDto.setMiddleName(userBean.getMiddleName());
+//        memberDto.setLastName(userBean.getLastName());
+//        return memberDto;
+//    }
 
     public static MemberDto memberToDtoMap(Member member) {
         MemberDto memberDto = new MemberDto();

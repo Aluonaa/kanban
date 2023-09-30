@@ -21,7 +21,7 @@ public class TaskMapper {
         taskDto.setExecutor(MemberMapper.memberToDtoMap(task.getExecutor()));
         taskDto.setAuthor(MemberMapper.memberToDtoMap(task.getAuthor()));
         taskDto.setTaskListDto(TaskListMapper.taskListToDtoMap(task.getTaskList()));
-        taskDto.setStatus(task.getStatus());
+//        taskDto.setStatus(task.getStatus());
         return taskDto;
     }
 

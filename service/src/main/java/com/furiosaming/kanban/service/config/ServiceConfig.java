@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 })
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = {
-        "com.furiosaming.kanban.persistence.repository",
-}, repositoryImplementationPostfix = "Impl")
+        "com.furiosaming.kanban.persistence.repository"
+})
 
 @EntityScan(basePackages = {
         "com.furiosaming.kanban.persistence.model"

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(name = "Response", description = "Ответ пользователю")
-public class PagingResponseDto<T> {
+public class  PagingResponseDto<T> {
 
     @Schema(name = "status", description = "Статус ответа (успешно, либо одна из ошибок)")
     private boolean status;
@@ -50,9 +50,9 @@ public class PagingResponseDto<T> {
             return this;
         }
 
-        public Builder<T> notFound() {
+        public Builder<T> notFound(String description) {
             pagingResponseDto.status = false;
-            pagingResponseDto.description = AppConstants.notFound;
+            pagingResponseDto.description = description;
             pagingResponseDto.result = null;
             return this;
         }

@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 public class PageRequestMapper {
     public static PageRequest pageRequestMap(PagingRequestDto pagingRequestDto) {
         PageRequest pageRequest;
-        if (pagingRequestDto.getPage() != null && pagingRequestDto.getLimit() != null) {
+//        if (pagingRequestDto.getPage() != null && pagingRequestDto.getLimit() != null) {
             if (pagingRequestDto.getPage() >= 0) {
                 if (pagingRequestDto.getLimit() > 0) {
                     pageRequest = PageRequest.of(pagingRequestDto.getPage(), pagingRequestDto.getLimit());
@@ -18,10 +18,6 @@ public class PageRequestMapper {
                     pageRequest = PageRequest.of(0, 10);
                 }
             }
-        } else
-            pageRequest = PageRequest.of(0, 10);
-
-
         return pageRequest;
     }
 }

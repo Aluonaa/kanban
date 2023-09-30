@@ -5,12 +5,16 @@ import com.furiosaming.kanban.persistence.filters.CommonFilter;
 import com.furiosaming.kanban.persistence.model.Member;
 import com.furiosaming.kanban.persistence.model.Project;
 import com.furiosaming.kanban.persistence.model.enums.SortFieldProject;
+import com.furiosaming.kanban.persistence.model.enums.Status;
 import com.furiosaming.kanban.persistence.repository.ProjectRepository;
 import com.furiosaming.kanban.persistence.specification.ProjectSpecification;
+import com.furiosaming.kanban.service.constants.AppConstants;
 import com.furiosaming.kanban.service.converter.filter.ProjectFilterMapper;
 import com.furiosaming.kanban.service.dto.MemberDto;
 import com.furiosaming.kanban.service.dto.ProjectDto;
 import com.furiosaming.kanban.service.dto.filter.ProjectFilter;
+import com.furiosaming.kanban.service.errors.Errors;
+import com.furiosaming.kanban.service.responseRequest.base.BaseResponseDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingRequestDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingResponseDto;
 import com.furiosaming.kanban.service.service.MemberService;
@@ -35,12 +39,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final MemberService memberService;
-    private final UserService userService;
+    //private final UserService userService;
 
-    public ProjectServiceImpl(UserService userService, MemberService memberService, ProjectRepository projectRepository) {
+    public ProjectServiceImpl(MemberService memberService, ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
         this.memberService = memberService;
-        this.userService = userService;
+        //this.userService = userService;
     }
 
 
@@ -49,7 +53,7 @@ public class ProjectServiceImpl implements ProjectService {
         log.debug("ProjectServiceImpl getAllProjects {}", pagingRequestDto);
         PageRequest pageRequest;
         pageRequest = pageRequestMap(pagingRequestDto);
-        ProjectFilter projectFilter = pagingRequestDto.getData();
+        ProjectFilter projectFilter = pagingRequestDto.getFilter();
         CommonFilter<SortFieldProject> commonFilter = ProjectFilterMapper.filterToCommonFilter(projectFilter);
         Page<Project> pageProject = projectRepository.findAll(ProjectSpecification.filterProject(commonFilter),
                 pageRequest);
@@ -61,35 +65,38 @@ public class ProjectServiceImpl implements ProjectService {
          *  сформированный из members уже найденных проектов,
          *  позже в него мапим тех юзеров, которых получили из user service
          **/
-        Set<MemberDto> memberDtoSet = new HashSet<>();
-        memberDtoSet.addAll(allProjectDto.stream().map(ProjectDto::getAuthor).distinct().collect(Collectors.toList()));
-        List<MemberDto> memberDtoListFromUserService = userService.getUsersFromUserService(userService.getUpnList(memberDtoSet));
-        memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
+//        Set<MemberDto> memberDtoSet = new HashSet<>();
+//        memberDtoSet.addAll(allProjectDto.stream().map(ProjectDto::getAuthor).distinct().collect(Collectors.toList()));
+//        List<MemberDto> memberDtoListFromUserService = new ArrayList<>();
+//                //userService.getUsersFromUserService(userService.getUpnList(memberDtoSet));
+//        memberDtoListUserToMemberDto(new ArrayList<>(memberDtoSet), memberDtoListFromUserService);
 
-        return PagingResponseDto.<List<ProjectDto>>newPageBuilder().ok(Collections.singletonList(allProjectDto), total, pageRequest.getPageNumber(), pageRequest.getPageSize());
+        return new PagingResponseDto.Builder<List<ProjectDto>>().success(allProjectDto, pageRequest.getPageNumber(), pageRequest.getPageSize(), total).build();
+
     }
 
 
     @Override
-    public BaseDataResponse<ProjectDto> getByIdProject(Long id) {
+    public BaseResponseDto<ProjectDto> getByIdProject(Long id) {
         log.debug("ProjectServiceImpl getByIdProject {}", id);
         Optional<Project> optionalProject = projectRepository.findById(id);
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
             ProjectDto projectDto = projectToDtoMap(project);
             /** Взаимодействие с user service **/
-            MemberDto memberDto = projectDto.getAuthor();
-            MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
-            memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
-            return BaseDataResponse.<ProjectDto>newBuilder().ok(projectDto);
+//            MemberDto memberDto = projectDto.getAuthor();
+//            MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
+//            memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
+            return new BaseResponseDto.Builder<ProjectDto>().success(projectDto).build();
+                   // BaseDataResponse.<ProjectDto>newBuilder().addError(notFound(ID_PROJECT_NOT_FOUND)).build();
         } else {
-            return BaseDataResponse.<ProjectDto>newBuilder().addError(notFound(ID_PROJECT_NOT_FOUND)).build();
+            return new BaseResponseDto.Builder<ProjectDto>().notFound(ID_PROJECT_NOT_FOUND).build();
         }
     }
 
     @Override
     @Transactional
-    public BaseDataResponse<ProjectDto> saveProject(ProjectDto projectDto) {
+    public BaseResponseDto<ProjectDto> saveProject(ProjectDto projectDto) {
         log.debug("ProjectServiceImpl saveProject {}", projectDto);
         if (projectDto.getId() == null) {
             return createProject(projectDto);
@@ -98,11 +105,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private BaseDataResponse<ProjectDto> createProject(ProjectDto projectDto) {
+    private BaseResponseDto<ProjectDto> createProject(ProjectDto projectDto) {
         if (projectDto.getName() != null && projectDto.getAuthor() != null) {
             Member member = memberService.createOrGetUser(projectDto.getAuthor().getUpn());
             if (member == null) {
-                return BaseDataResponse.<ProjectDto>newBuilder().addError(missing(MISSING_FIELD_AUTHOR)).build();
+                return new BaseResponseDto.Builder<ProjectDto>().missing(MISSING_FIELD_AUTHOR).build();
             }
             Project project = dtoToProjectMap(projectDto);
             project.setAuthor(member);
@@ -111,16 +118,16 @@ public class ProjectServiceImpl implements ProjectService {
             ProjectDto projectDtoResp = projectToDtoMap(project);
 
             /** Взаимодействие с user service **/
-            MemberDto memberDto = projectDto.getAuthor();
-            MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
-            memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
-            return BaseDataResponse.<ProjectDto>newBuilder().ok(projectDtoResp);
+//            MemberDto memberDto = projectDto.getAuthor();
+//            MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
+//            memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
+            return new BaseResponseDto.Builder<ProjectDto>().success(projectDtoResp).build();
         } else {
-            return BaseDataResponse.<ProjectDto>newBuilder().addError(missing(MISSING_FIELDS)).build();
+            return new BaseResponseDto.Builder<ProjectDto>().missing(MISSI NG_FIELDS).build();
         }
     }
 
-    private BaseDataResponse<ProjectDto> editProject(ProjectDto projectDto) {
+    private BaseResponseDto<ProjectDto> editProject(ProjectDto projectDto) {
         Optional<Project> optionalProject = projectRepository.findById(projectDto.getId());
         if (optionalProject.isPresent()) {
             if (projectDto.getName() != null) {
@@ -130,22 +137,22 @@ public class ProjectServiceImpl implements ProjectService {
                 projectDto = projectToDtoMap(project);
 
                 /** Взаимодействие с user service **/
-                MemberDto memberDto = projectDto.getAuthor();
-                MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
-                memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
+//                MemberDto memberDto = projectDto.getAuthor();
+//                MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
+//                memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
 
-                return BaseDataResponse.<ProjectDto>newBuilder().ok(projectDto);
+                return new BaseResponseDto.Builder<ProjectDto>().success(projectDto).build();
             } else {
-                return BaseDataResponse.<ProjectDto>newBuilder().addError(missing(MISSING_FIELD_NAME)).build();
+                return new BaseResponseDto.Builder<ProjectDto>().notFound(MISSING_FIELD_NAME).build();
             }
         } else {
-            return BaseDataResponse.<ProjectDto>newBuilder().addError(notFound(ID_PROJECT_NOT_FOUND)).build();
+            return new BaseResponseDto.Builder<ProjectDto>().notFound(ID_PROJECT_NOT_FOUND).build();
         }
     }
 
     @Override
     @Transactional
-    public BaseDataResponse<ProjectDto> deleteProject(Long id) {
+    public BaseResponseDto<ProjectDto> deleteProject(Long id) {
         log.debug("ProjectServiceImpl deleteProject {}", id);
         Optional<Project> optionalProject = projectRepository.findById(id);
         if (optionalProject.isPresent()) {
@@ -154,13 +161,13 @@ public class ProjectServiceImpl implements ProjectService {
             projectRepository.save(project);
             ProjectDto projectDto = projectToDtoMap(project);
             /** Взаимодействие с user service **/
-            MemberDto memberDto = projectDto.getAuthor();
-            MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
-            memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
+//            MemberDto memberDto = projectDto.getAuthor();
+//            MemberDto memberDtoFromUserService = userService.getUserFromUserService(memberDto.getUpn());
+//            memberDtoListUserToMemberDto(memberDto, memberDtoFromUserService);
 
-            return BaseDataResponse.<ProjectDto>newBuilder().ok(projectDto);
+            return new BaseResponseDto.Builder<ProjectDto>().success(projectDto).build();
         } else {
-            return BaseDataResponse.<ProjectDto>newBuilder().addError(notFound(ID_PROJECT_NOT_FOUND)).build();
+            return new BaseResponseDto.Builder<ProjectDto>().notFound(ID_PROJECT_NOT_FOUND).build();
         }
     }
 

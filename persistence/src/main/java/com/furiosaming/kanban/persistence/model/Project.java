@@ -19,9 +19,8 @@ public class Project {
     private String name;
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
-    @Column(length = 255)
-    private String appId;
-
+    @Column(name = "app_id")
+    private Long appId;
     @ManyToOne
     @JoinColumn(name = "author")
     private Member author;

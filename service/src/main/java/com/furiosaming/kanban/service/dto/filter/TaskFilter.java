@@ -15,11 +15,11 @@ public class TaskFilter {
     private String name;
     @Schema(name = "author", description = "Фильтр по автору")
     private String author;
+    @Schema(name = "status", description = "Статус")
+    private Status status;
     @Schema(name = "sortFieldTask", description = "Поле, по которому проводится сортировка")
     private SortFieldTask sortFieldTask;
     @Schema(name = "sortType", description = "Тип сортировки(возрастающая, убывающая)")
     private SortType sortType;
-    @Schema(name = "status", description = "Статус")
-    private Status status;
 }
 

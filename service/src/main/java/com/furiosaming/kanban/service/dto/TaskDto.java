@@ -21,22 +21,22 @@ public class TaskDto {
     @Schema(name = "description", description = "Описание задачи")
     private String description;
     @Schema(name = "deadline", description = "Deadline")
-    @JsonFormat(
-            pattern = DATE_TIME,
-            timezone = "UTC"
-    )
+//    @JsonFormat(
+//            pattern = "yyyy-MM-dd HH:mm:ss",
+//            timezone = "UTC"
+//    )
     private Date deadline;
     @Schema(name = "create", description = "Дата создания")
-    @JsonFormat(
-            pattern = DATE_TIME,
-            timezone = "UTC"
-    )
+//    @JsonFormat(
+//            pattern = "yyyy-MM-dd HH:mm:ss",
+//            timezone = "UTC"
+//    )
     private Date create;
     @Schema(name = "update", description = "Дата последнего обновления")
-    @JsonFormat(
-            pattern = DATE_TIME,
-            timezone = "UTC"
-    )
+//    @JsonFormat(
+//            pattern = "yyyy-MM-dd HH:mm:ss",
+//            timezone = "UTC"
+//    )
     private Date update;
     @Schema(name = "taskListDto", description = "Список задач")
     private TaskListDto taskListDto;

@@ -13,23 +13,22 @@ public class Errors {
     public static String MISSING_FIELD_AUTHOR = "Поле автора не заполнено";
     public static String ID_TASK_LIST_NOT_FOUND = "Список задач с полученным id не найден";
     public static String ID_TASK_NOT_FOUND = "Задача с полученным id не найдена";
-    public static String AAAAA = "ОШИБКА ТУТ";
 
 
-    public static OperationError notFound(String message) {
-        OperationError operationError = new OperationError();
-        operationError.setType(String.valueOf(NOT_FOUND));
-        operationError.setMessage(message);
-        operationError.setCode(null);
-        return operationError;
+    public static ProgramError notFound(String message) {
+        ProgramError programError = new ProgramError();
+        programError.setType(CommonErrorTypes.NOT_FOUND);
+        programError.setMessage(message);
+        programError.setCode(null);
+        return programError;
     }
 
-    public static OperationError missing(String message) {
-        OperationError operationError = new OperationError();
-        operationError.setType(String.valueOf(VALIDATION));
-        operationError.setMessage(message);
-        operationError.setCode(null);
-        return operationError;
+    public static ProgramError missing(String message) {
+        ProgramError programError = new ProgramError();
+        programError.setType(CommonErrorTypes.VALIDATION);
+        programError.setMessage(message);
+        programError.setCode(null);
+        return programError;
     }
 
 }

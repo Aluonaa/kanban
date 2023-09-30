@@ -8,12 +8,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaskSpecification {
-
     public static Specification<Task> filterTask(CommonFilter commonFilter) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -33,17 +33,19 @@ public class TaskSpecification {
             }
             /**STATUS**/
             /**Eсли задача выполнена, сортировать по дате выполнения, если задача в процессе - по дате создания**/
-            Expression expression;
-            expression = criteriaBuilder.selectCase().when(criteriaBuilder.equal(root.get("status"), Status.COMPLETE),
-                    root.get("finish"))
-                    .when(criteriaBuilder.equal(root.get("status"), Status.ACTIVE), root.get("dateOfCreate"))
-                    .when(criteriaBuilder.equal(root.get("status"), Status.DEADLINE), root.get("deadline"))
-            ;
-
+            /** этот код не работает **/
+//            Expression expression;
+//            expression = criteriaBuilder.selectCase().when(criteriaBuilder.equal(root.get("status"), Status.COMPLETE),
+//                    root.get("finish"))
+//                    .when(criteriaBuilder.equal(root.get("status"), Status.ACTIVE), root.get("dateOfCreate"))
+//                    .when(criteriaBuilder.equal(root.get("status"), Status.DEADLINE), root.get("deadline"))
+//            ;
+            Path path;
+            path = root.get(commonFilter.getSortField().toString().toLowerCase());
             if (commonFilter.getSortType() == SortType.DESCENDING) {
-                query.orderBy(criteriaBuilder.desc(expression));
+                query.orderBy(criteriaBuilder.desc(path));
             } else {
-                query.orderBy(criteriaBuilder.asc(expression));
+                query.orderBy(criteriaBuilder.asc(path));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

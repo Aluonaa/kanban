@@ -3,6 +3,7 @@ package com.furiosaming.kanban.web.controller;
 
 import com.furiosaming.kanban.service.dto.ProjectDto;
 import com.furiosaming.kanban.service.dto.filter.ProjectFilter;
+import com.furiosaming.kanban.service.responseRequest.base.BaseResponseDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingRequestDto;
 import com.furiosaming.kanban.service.responseRequest.page.PagingResponseDto;
 import com.furiosaming.kanban.service.service.ProjectService;
@@ -30,7 +31,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "Получить все проекты")
-    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/search2", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public PagingResponseDto<List<ProjectDto>> allProject(@Valid @RequestBody PagingRequestDto<ProjectFilter> pagingRequestDto) {
         log.debug("GET ALL PROJECTS");
         return projectService.getAllProjects(pagingRequestDto);
@@ -38,23 +39,22 @@ public class ProjectController {
 
     @Operation(summary = "Получить проект по id")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseDataResponse<ProjectDto> getByIdProject(@PathVariable Long id) {
+    public BaseResponseDto<ProjectDto> getByIdProject(@PathVariable Long id) {
         log.debug("GET PROJECT BY ID");
         return projectService.getByIdProject(id);
     }
 
     @Operation(summary = "Создать проект")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseDataResponse<ProjectDto> newProject(@RequestBody ProjectDto projectDto) {
+    public BaseResponseDto<ProjectDto> newProject(@RequestBody ProjectDto projectDto) {
         log.debug("NEW/UPDATE PROJECT");
         return projectService.saveProject(projectDto);
     }
 
     @Operation(summary = "Удалить проект")
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseDataResponse<ProjectDto> deleteProject(@PathVariable Long id) {
+    public BaseResponseDto<ProjectDto> deleteProject(@PathVariable Long id) {
         log.debug("DELETE PROJECT");
         return projectService.deleteProject(id);
     }
-
 }
